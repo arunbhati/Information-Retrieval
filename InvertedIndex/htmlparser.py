@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 from utility import normalize_line
+from nltk.corpus import stopwords
+import nltk
 
 class HtmlParser:
 
@@ -8,15 +10,22 @@ class HtmlParser:
         self.fileLocation = location
         self.inputHtml = open(self.fileLocation+self.fileName).read()
         self.parseHtml = BeautifulSoup(self.inputHtml)
-        self.stem = stem
         self.ignore_stop_word = ignore_stop_word
-
+        self.stop_word_list = stopwords.words("english")
+        self.stem = stem
+        self.word_stemmer = nltk.stem.porter.PorterStemmer()
 
     def print_file_name(self):
         print "FileName : ", self.fileName
 
     def is_valid_word(self, word):
+
+        if self.stem:
+            word = self.word_stemmer.stem(word)
+
         if word.isalnum():
+            if self.ignore_stop_word and word in self.stop_word_list:
+                return False, ""
             return True, word
         return False, ""
 
