@@ -19,7 +19,8 @@ class HtmlParser:
         print "FileName : ", self.fileName
 
     def is_valid_word(self, word):
-
+	
+	word = word.lower()
         if self.stem:
             word = self.word_stemmer.stem(word)
 
