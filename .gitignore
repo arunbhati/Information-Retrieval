@@ -1,0 +1,5 @@
+InvertedIndex/doc_len.txt
+InvertedIndex/log_file
+InvertedIndex/*.pyc
+InvertedIndex/*~
+InvertedIndex/*.pickle
