@@ -108,11 +108,13 @@ class query_evaluation:
 				elif word_pl[j].doc_id < cur_pl[i].doc_id:
 					j += 1
 				else:
+					#print "doc_id match at ", cur_pl[i].doc_id
 					ii = 0
 					jj = 0
 					doc_cur_pl = sorted(cur_pl[i].positions)
 					doc_word_pl = sorted(word_pl[j].positions)
 					while ii < len(doc_cur_pl) and jj < len(doc_word_pl):
+						#print "\t%d %d\n"%(doc_cur_pl[ii],doc_word_pl[jj])
 						if doc_cur_pl[ii] > doc_word_pl[jj]:
 							jj += 1
 						# doc_cur_pl[ii] == doc_word_pl[jj], iff last_cur_word == word
@@ -122,6 +124,7 @@ class query_evaluation:
 						else:
 							if doc_cur_pl[ii] == doc_word_pl[jj] -1:
 								#Found "phrase strict" following
+								#print "Found matching positions %d %d\n"%(doc_cur_pl[ii],doc_word_pl[jj])
 								if len(new_pl) > 0 and new_pl[-1].doc_id == cur_pl[i].doc_id:
 									new_pl[-1].positions.append(doc_word_pl[jj])
 								else:
@@ -176,8 +179,8 @@ test = query_evaluation("d","dictionary.pickle","h","p")
 
 a = sorted(test.phrasalquery(['new','york'],TF), key = lambda x:x.score)
 for y in a:
-	y = 1
-	#print y.doc_id , y.score
+	#y = 1
+	print y.doc_id , y.score
 
 '''l = []
 for query in test.word_id_map:
