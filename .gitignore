@@ -3,3 +3,4 @@ InvertedIndex/log_file
 InvertedIndex/*.pyc
 InvertedIndex/*~
 InvertedIndex/*.pickle
+InvertedIndex/.idea/

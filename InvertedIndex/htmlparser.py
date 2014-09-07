@@ -16,22 +16,23 @@ class HtmlParser:
     def print_file_name(self):
         print "FileName : ", self.fileName
 
-    def is_valid_word(self, word):	
-	if self.stem:
+    def is_valid_word(self, word):
+        if self.stem:
             word = self.word_stemmer.stem(word)
-        if word.isalnum():
+        if word.isalpha():
             if self.ignore_stop_word and self.stop_word_list.has_key(word):
                 return False, ""
             return True, word
         return False, ""
 
-    def parseHTML(self):	
-	self.parseHtml = re.sub(r'< *script.*>*?< */ *script *>',"",self.parseHtml)
-	self.parseHtml = re.sub(r'< *link.*?>',"",self.parseHtml)
-	self.parseHtml = re.sub(r'< *style.*>*?< */ *style *>',"",self.parseHtml)
-	self.parseHtml = re.sub(r'<.*?>',"",self.parseHtml)
-	self.parseHtml.lower()
-	return self.parseHtml.split() 
+    def parseHTML(self):
+        self.parseHtml = self.parseHtml.lower()
+        self.parseHtml = re.sub(r'<!--[\S\s]*?-->',"",self.parseHtml)
+        self.parseHtml = re.sub(r'<\s*script\s?[\S\s]*?>[\S\s]*?<\s*/\s*script\s*>',"",self.parseHtml)
+        self.parseHtml = re.sub(r'<\s*style\s?[\S\s]*?>[\S\s]*?<\s*/\s*style\s*>',"",self.parseHtml)
+        self.parseHtml = re.sub(r'<\s*link\s?[\S\s]*?>',"",self.parseHtml)
+        self.parseHtml = re.sub(r'<[\S\s]*?>',"",self.parseHtml)
+        return self.parseHtml.split() 
 
     def get_all_words(self):
 	words = self.parseHTML()
