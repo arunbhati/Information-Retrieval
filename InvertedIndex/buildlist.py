@@ -10,10 +10,12 @@ def get_byte_array(num):
     return struct.pack("<i", num)
 
 
-def iterate_folder(fp, word_to_tail_map, document_len_map, file_path):
+def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk_size):
 
     document_list = [document_name for document_name in listdir(file_path) if isfile(join(file_path, document_name))]
-
+    
+    word_info = {}
+    cur_chunk_size = 0
     for document in document_list:
         if document.isdigit():
             print document
@@ -31,6 +33,15 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path):
             document_len_map[int(document)] = current_position - 1 
 
             for word in word_to_position_map:
+                if word not in word_info:
+                    word_info[word] = []
+                word_info[word].append((int(document),word_to_position_map[word]))            
+
+            cur_chunk_size += 1
+            if cur_chunk_size < file_chunk_size:
+                continue            
+
+            for word in word_info:
                 new_tail = fp.tell()
 
                 if word not in word_to_tail_map:
@@ -38,33 +49,67 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path):
 
                 fp.write(get_byte_array(word_to_tail_map[word]))
                 word_to_tail_map[word] = new_tail
-                fp.write(get_byte_array(int(document)))
                 fp.write(get_byte_array(0))
-                pos_len = 0
-                for pos in word_to_position_map[word]:
-                    fp.write(get_byte_array(pos))
-                    pos_len += 1
-                fp.seek(fp.tell()-(pos_len+1)*4)
-                fp.write(get_byte_array(pos_len))
-                fp.seek(fp.tell()+pos_len*4)
-                
-
+                #space for number of documents containing the word reserved
+                total_int_written = 0
+                for (word_doc,positions) in word_info[word]:
+                    fp.write(get_byte_array(int(word_doc)))
+                    fp.write(get_byte_array(0))
+                    pos_len = 0
+                    for pos in positions:
+                        fp.write(get_byte_array(pos))
+                        pos_len += 1
+                    fp.seek(fp.tell()-(pos_len+1)*4)
+                    fp.write(get_byte_array(pos_len))
+                    fp.seek(fp.tell()+pos_len*4)
+                    total_int_written += (pos_len+2)
+                fp.seek(fp.tell()-(total_int_written+1)*4)
+                fp.write(get_byte_array(total_int_written))
+                fp.seek(fp.tell()+total_int_written*4)
+            
+                    
+            word_info = {}
+            cur_chunk_size = 0
 
 
 def main():
-    fp = open("posting_list", "wb")
+    fp = open("posting_list", "ab")
     
-    word_to_tail_map = {}
-    document_len_map = {}
-
     word_pickle_file = "dictionary.pickle"
     document_pickle_file = "document.pickle"
     directory_name = "/home/arun/data/asd/"
+    """
+    if isfile(word_pickle_file):
+        word_to_tail_map = pickle.load(open(word_pickle_file,"rb"))
+    else:
+        word_to_tail_map = {}
+    """
+
+    word_to_tail_map = pickle.load(open(word_pickle_file,"rb")) if isfile(word_pickle_file) else {}
+
+    """
+    if isfile(document_pickle_file):
+        document_len_map = pickle.load(open(document_pickle_file,"rb"))
+    else:
+        document_len_map = {}
+    """
+
+    document_len_map = pickle.load(open(document_pickle_file,"rb")) if isfile(document_pickle_file) else {}
+
+    if isfile(word_pickle_file):
+        word_to_tail_map = pickle.load(open(word_pickle_file,"rb"))
+    else:
+        word_to_tail_map = {}
+
+    if isfile(document_pickle_file):
+        document_len_map = pickle.load(open(document_pickle_file,"rb"))
+    else:
+        document_len_map = {}
 
     folder_list = [os.path.join(directory_name, o) for o in os.listdir(directory_name) if os.path.isdir(os.path.join(directory_name, o))]
 
     for folder in folder_list:
-        iterate_folder(fp, word_to_tail_map, document_len_map, folder+"/")
+        iterate_folder(fp, word_to_tail_map, document_len_map, folder+"/", 1000)
 
     fp.close()
     
