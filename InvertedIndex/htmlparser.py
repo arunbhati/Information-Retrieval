@@ -35,11 +35,11 @@ class HtmlParser:
         return self.parseHtml.split() 
 
     def get_all_words(self):
-	words = self.parseHTML()
-	final_words = [] 
-	for word in words:
-		(valid, final_word) = self.is_valid_word(word)
-		if valid:
-			final_words.append(final_word)
-	return final_words
+        words = self.parseHTML()
+        final_words = [] 
+        for word in words:
+            (valid, final_word) = self.is_valid_word(word)
+            if valid:
+                final_words.append(final_word)
+        return final_words
 
