@@ -4,3 +4,4 @@ InvertedIndex/*.pyc
 InvertedIndex/*~
 InvertedIndex/*.pickle
 InvertedIndex/.idea/
+InvertedIndex/__pycache__/
