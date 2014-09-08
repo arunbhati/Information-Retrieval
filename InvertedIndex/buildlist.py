@@ -18,7 +18,6 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
     cur_chunk_size = 0
     for document in document_list:
         if document.isdigit():
-            print document
             html_parser = HtmlParser(file_path, document, False, True)
             word_list = html_parser.get_all_words()
             word_to_position_map = {}
@@ -41,9 +40,10 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
             if cur_chunk_size < file_chunk_size:
                 continue            
 
+            print document
+
             for word in word_info:
                 new_tail = fp.tell()
-
                 if word not in word_to_tail_map:
                     word_to_tail_map[word] = -1
 
@@ -63,21 +63,24 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
                     fp.write(get_byte_array(pos_len))
                     fp.seek(fp.tell()+pos_len*4)
                     total_int_written += (pos_len+2)
+                
                 fp.seek(fp.tell()-(total_int_written+1)*4)
                 fp.write(get_byte_array(total_int_written))
                 fp.seek(fp.tell()+total_int_written*4)
-            
                     
             word_info = {}
             cur_chunk_size = 0
 
 
 def main():
-    fp = open("posting_list", "ab")
+    fp = open("posting_list", "wb")
     
+
+
     word_pickle_file = "dictionary.pickle"
     document_pickle_file = "document.pickle"
-    directory_name = "/home/arun/data/asd/"
+    directory_name = "/home/arun/dataset/asd/"
+    
     """
     if isfile(word_pickle_file):
         word_to_tail_map = pickle.load(open(word_pickle_file,"rb"))
@@ -96,31 +99,10 @@ def main():
 
     document_len_map = pickle.load(open(document_pickle_file,"rb")) if isfile(document_pickle_file) else {}
 
-    if isfile(word_pickle_file):
-        word_to_tail_map = pickle.load(open(word_pickle_file,"rb"))
-    else:
-        word_to_tail_map = {}
-
-    if isfile(document_pickle_file):
-        document_len_map = pickle.load(open(document_pickle_file,"rb"))
-    else:
-        document_len_map = {}
-
-    if isfile(word_pickle_file):
-        word_to_tail_map = pickle.load(open(word_pickle_file,"rb"))
-    else:
-        word_to_tail_map = {}
-
-    if isfile(document_pickle_file):
-        document_len_map = pickle.load(open(document_pickle_file,"rb"))
-    else:
-        document_len_map = {}
-
     folder_list = [os.path.join(directory_name, o) for o in os.listdir(directory_name) if os.path.isdir(os.path.join(directory_name, o))]
 
     for folder in folder_list:
-        iterate_folder(fp, word_to_tail_map, document_len_map, folder+"/", 1000)
-
+        iterate_folder(fp, word_to_tail_map, document_len_map, folder+"/", 2000)
     fp.close()
     
     fp = open(word_pickle_file, "wb")
