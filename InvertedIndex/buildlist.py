@@ -106,6 +106,16 @@ def main():
     else:
         document_len_map = {}
 
+    if isfile(word_pickle_file):
+        word_to_tail_map = pickle.load(open(word_pickle_file,"rb"))
+    else:
+        word_to_tail_map = {}
+
+    if isfile(document_pickle_file):
+        document_len_map = pickle.load(open(document_pickle_file,"rb"))
+    else:
+        document_len_map = {}
+
     folder_list = [os.path.join(directory_name, o) for o in os.listdir(directory_name) if os.path.isdir(os.path.join(directory_name, o))]
 
     for folder in folder_list:
