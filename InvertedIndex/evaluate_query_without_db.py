@@ -16,7 +16,7 @@ class plentry:
 		self.doc_id       = doc_id
 		self.positions    = positions
 
-class ScoreEntry:
+class score:
 	def __init__(self, doc_id , score):
 		self.doc_id = doc_id
 		self.score  = score
@@ -48,15 +48,19 @@ class query_evaluation:
 		pfile = self.posting_file
 		pfile.seek(starting_byte)
 		parent  = self.byte_array_to_int(pfile.read(4))
-		doc_id  = self.byte_array_to_int(pfile.read(4))
-		pos_len = self.byte_array_to_int(pfile.read(4))
-		
-		positions = []
-		while pos_len:
-			positions.append(self.byte_array_to_int(pfile.read(4)))
-			pos_len -= 1
-		return (parent,doc_id,positions)
-		
+        cur_pl_len = self.byte_array_to_int(pfile.read(4))
+        cur_pl = []
+        while cur_pl_len:
+            doc_id  = self.byte_array_to_int(pfile.read(4))
+            pos_len = self.byte_array_to_int(pfile.read(4))
+            positions = []
+            while pos_len:
+                positions.append(self.byte_array_to_int(pfile.read(4)))
+                pos_len -=1
+            cur_pl.append(doc_id,positions)
+            cur_pl_len -=1
+	    
+        return (parent,cur_pl)
 
 	def getPostingList(self, word):
 		
@@ -64,8 +68,9 @@ class query_evaluation:
 		posting_list = []
 		
 		while True:
-			(parent, doc_id, positions) = self.getPostingListEntry(cur)
-			posting_list.append(plentry(doc_id, positions))
+			(parent, cur_pl) = self.getPostingListEntry(cur)
+            for (doc_id,positions) in cur_pl:
+			    posting_list.append(plentry(doc_id, positions))
 			if parent == -1:
 				break
 			cur = parent
@@ -78,8 +83,7 @@ class query_evaluation:
 		if metric == TF:
 			score_list = []
 			for i in range (len(posting_list)):
-
-				score_list.append(ScoreEntry(posting_list[i].doc_id, len(posting_list[i].positions)))
+				score_list.append(score(posting_list[i].doc_id, len(posting_list[i].positions)))
 			return sorted(score_list, key=lambda x: x.doc_id)
 				
 
@@ -91,7 +95,7 @@ class query_evaluation:
 				print query , "not present in any document"
 				return []
 			for i in range(len(posting_list)):
-				score_list.append(ScoreEntry(posting_list[i].doc_id, idf*len(posting_list[i].positions)))
+				score_list.append(score(posting_list[i].doc_id, idf*len(posting_list[i].positions)))
 			return sorted(score_list, key=lambda x: x.doc_id)
 		
 		
@@ -112,7 +116,7 @@ class query_evaluation:
 				tf = len(posting_list[i].positions)
 				doc_len = self.doc_len_map[doc_id]
 				score = (idf * (tf * (k1 + 1)))/(tf + k1 * (1 - b + b * (doc_len/avgdl)))
-				score_list.append(ScoreEntry(doc_id,score))
+				score_list.append(score(doc_id,score))
 			return sorted(score_list, key=lambda x:x.doc_id)
 		
 		
@@ -135,6 +139,7 @@ class query_evaluation:
 					i += 1
 				elif word_pl[j].doc_id < cur_pl[i].doc_id:
 					j += 1
+				else:
 				else:
 					#print "doc_id match at ", cur_pl[i].doc_id
 					ii = 0
@@ -200,3 +205,11 @@ class query_evaluation:
 			del cur_score[:]
 			cur_score = new_score
 		return cur_score
+import pickle
+import sys
+import math
+import linecache as lc
+import struct
+
+log = math.log
+getline = lc.getline
