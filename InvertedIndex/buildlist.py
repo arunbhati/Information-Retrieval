@@ -52,6 +52,7 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
                 fp.write(get_byte_array(0))
                 #space for number of documents containing the word reserved
                 total_int_written = 0
+                num_doc = 0
                 for (word_doc,positions) in word_info[word]:
                     fp.write(get_byte_array(int(word_doc)))
                     fp.write(get_byte_array(0))
@@ -63,9 +64,9 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
                     fp.write(get_byte_array(pos_len))
                     fp.seek(fp.tell()+pos_len*4)
                     total_int_written += (pos_len+2)
-                
+                    num_doc += 1
                 fp.seek(fp.tell()-(total_int_written+1)*4)
-                fp.write(get_byte_array(total_int_written))
+                fp.write(get_byte_array(num_doc))
                 fp.seek(fp.tell()+total_int_written*4)
                     
             word_info = {}
