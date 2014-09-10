@@ -1,7 +1,7 @@
 import sys
 import os
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, getsize
 from htmlparser import HtmlParser
 import struct
 import pickle
@@ -10,7 +10,7 @@ def get_byte_array(num):
     return struct.pack("<i", num)
 
 
-def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk_size):
+def iterate_folder(html_parser,fp, word_to_tail_map, document_len_map, file_path, file_chunk_size):
 
     document_list = [document_name for document_name in listdir(file_path) if isfile(join(file_path, document_name))]
     
@@ -18,8 +18,11 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
     cur_chunk_size = 0
     for document in document_list:
         if document.isdigit():
-            html_parser = HtmlParser(file_path, document, False, True)
-            word_list = html_parser.get_all_words()
+            if getsize(file_path+document) > 3000000:
+                cur_chunk_size += 1
+                continue
+                
+            word_list = html_parser.get_all_words(file_path+document)
             word_to_position_map = {}
             
             current_position = 1
@@ -40,6 +43,9 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
             if cur_chunk_size < file_chunk_size:
                 continue            
 
+            log_file_to_check = open("log_file_done_tillYN","a")
+            log_file_to_check.write("%s\n"%(document))
+            log_file_to_check.close()
             print document
 
             for word in word_info:
@@ -74,13 +80,13 @@ def iterate_folder(fp, word_to_tail_map, document_len_map, file_path, file_chunk
 
 
 def main():
-    fp = open("posting_list", "wb")
+    fp = open("posting_listYN", "wb")
     
+    html_parser = HtmlParser(True,True)
 
-
-    word_pickle_file = "dictionary.pickle"
-    document_pickle_file = "document.pickle"
-    directory_name = "/home/arun/dataset/asd/"
+    word_pickle_file = "dictionaryYN.pickle"
+    document_pickle_file = "documentYN.pickle"
+    directory_name = "/home/arun/asd/"
     
     """
     if isfile(word_pickle_file):
@@ -103,7 +109,7 @@ def main():
     folder_list = [os.path.join(directory_name, o) for o in os.listdir(directory_name) if os.path.isdir(os.path.join(directory_name, o))]
 
     for folder in folder_list:
-        iterate_folder(fp, word_to_tail_map, document_len_map, folder+"/", 2000)
+        iterate_folder(html_parser, fp, word_to_tail_map, document_len_map, folder+"/", 10000)
     fp.close()
     
     fp = open(word_pickle_file, "wb")

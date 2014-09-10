@@ -41,27 +41,40 @@ class query_evaluation:
         self.posting_file.close()   
     
     def byte_array_to_int(self, byte_array):
-        return struct.unpack("<i",byte_array)[0]
+        return struct.unpack("<q",byte_array)[0]
          
 
     def getPostingListEntry(self, starting_byte):
         
+        size_of_longlong = 8
+
         pfile = self.posting_file
         pfile.seek(starting_byte)
-        parent  = self.byte_array_to_int(pfile.read(4))
-        cur_pl_len = self.byte_array_to_int(pfile.read(4))
         cur_pl = []
-        while cur_pl_len:
-            doc_id  = self.byte_array_to_int(pfile.read(4))
-            pos_len = self.byte_array_to_int(pfile.read(4))
-            positions = []
-            while pos_len:
-                positions.append(self.byte_array_to_int(pfile.read(4)))
-                pos_len -=1
-            cur_pl.append((doc_id,positions))
-            cur_pl_len -=1
         
-        return (parent,cur_pl)
+        parent  = self.byte_array_to_int(pfile.read(size_of_longlong))
+        
+        while True:
+
+            doc_id = self.byte_array_to_int(pfile.read(size_of_longlong))
+            cur_doc_pl = []
+            if doc_id < 0:
+                break    
+        
+            while True:        
+            
+                pos = self.byte_array_to_int(pfile.read(size_of_longlong))
+                if pos < 0:
+                    break
+                
+                cur_doc_pl.append(pos)
+
+            cur_pl.append((doc_id,cur_doc_pl))
+
+
+        return((parent, cur_pl))
+
+
 
     def getPostingList(self, word):
         

@@ -2,6 +2,7 @@ from utility import normalize_line
 import nltk
 import re
 
+        
 class HtmlParser:
 
     def __init__(self,  location, name, stem=False, ignore_stop_word=False):
@@ -26,12 +27,14 @@ class HtmlParser:
         return False, ""
 
     def parseHTML(self):
+    
         self.parseHtml = self.parseHtml.lower()
         self.parseHtml = re.sub(r'<!--[\S\s]*?-->',"",self.parseHtml)
         self.parseHtml = re.sub(r'<\s*script\s?[\S\s]*?>[\S\s]*?<\s*/\s*script\s*>',"",self.parseHtml)
         self.parseHtml = re.sub(r'<\s*style\s?[\S\s]*?>[\S\s]*?<\s*/\s*style\s*>',"",self.parseHtml)
         self.parseHtml = re.sub(r'<\s*link\s?[\S\s]*?>',"",self.parseHtml)
         self.parseHtml = re.sub(r'<[\S\s]*?>',"",self.parseHtml)
+            
         return self.parseHtml.split() 
 
     def get_all_words(self):
