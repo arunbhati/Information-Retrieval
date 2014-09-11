@@ -3059,6 +3059,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
     pinfo.get_all()
 
     if pinfo.error:
+        print pinfo.error
         raise YaccError("Unable to build parser")
 
     # Check signature against table files (if any)
